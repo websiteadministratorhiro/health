@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="100" fill="#22c55e"/>
+  <!-- 心拍線 -->
+  <polyline
+    points="48,256 140,256 184,140 232,340 280,180 320,276 364,276 408,256 464,256"
+    fill="none"
+    stroke="white"
+    stroke-width="26"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+  <!-- 葉っぱ -->
+  <path
+    d="M400,400 Q460,310 400,284 Q370,340 400,400 Z"
+    fill="white"
+    opacity="0.9"
+  />
+  <path
+    d="M400,400 Q340,370 340,310 Q400,310 400,400 Z"
+    fill="white"
+    opacity="0.7"
+  />
+</svg>
