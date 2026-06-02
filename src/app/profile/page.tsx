@@ -91,7 +91,7 @@ export default function ProfilePage() {
     const bmr = calcBMR(w, Number(height_cm), Number(age), gender)
     const tdee = calcTDEE(bmr, activity_level)
     const targetCal = calcTargetCalories(tdee, goal_type)
-    const pfc = calcTargetPFC(Math.round(targetCal), goal_type)
+    const pfc = calcTargetPFC(Math.round(targetCal), goal_type, Number(weight_kg))
     return { bmr: Math.round(bmr), tdee: Math.round(tdee), targetCal: Math.round(targetCal), pfc }
   }
 

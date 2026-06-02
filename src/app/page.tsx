@@ -48,7 +48,7 @@ export default function DashboardPage() {
     const bmr = calcBMR(weight, profile.height_cm, age, profile.gender)
     tdee = Math.round(calcTDEE(bmr, profile.activity_level))
     targetCal = Math.round(calcTargetCalories(tdee, profile.goal_type))
-    targetPFC = calcTargetPFC(targetCal, profile.goal_type)
+    targetPFC = calcTargetPFC(targetCal, profile.goal_type, weight)
   }
 
   // 達成済み判定：プランのmenu_nameと実績のmenu_nameが一致

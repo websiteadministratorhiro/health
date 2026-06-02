@@ -28,18 +28,40 @@ export function calcLeanBodyMass(weight: number, bodyFatPct: number): number {
   return weight * (1 - bodyFatPct / 100)
 }
 
-const PFC_RATIOS: Record<GoalType, { protein: number; fat: number; carb: number }> = {
-  'ダイエット': { protein: 0.30, fat: 0.25, carb: 0.45 },
-  '筋トレ': { protein: 0.35, fat: 0.25, carb: 0.40 },
-  'ボディメイク': { protein: 0.35, fat: 0.25, carb: 0.40 },
+// 脂質と炭水化物の比率（F:C）
+const FAT_CARB_RATIOS: Record<GoalType, { fat: number; carb: number }> = {
+  'ダイエット': { fat: 0.35, carb: 0.65 },
+  '筋トレ': { fat: 0.38, carb: 0.62 },
+  'ボディメイク': { fat: 0.38, carb: 0.62 },
 }
 
-export function calcTargetPFC(targetCalories: number, goalType: GoalType) {
-  const ratio = PFC_RATIOS[goalType]
+// 体重ベースのタンパク質係数
+const PROTEIN_PER_KG: Record<GoalType, number> = {
+  'ダイエット': 1.2,
+  '筋トレ': 1.6,
+  'ボディメイク': 1.6,
+}
+
+function roundTo5(n: number): number {
+  return Math.round(n / 5) * 5
+}
+
+export function calcTargetPFC(targetCalories: number, goalType: GoalType, weight?: number) {
+  // タンパク質：体重ベース（weightがあれば）or カロリーベース
+  const proteinG = weight
+    ? roundTo5(weight * PROTEIN_PER_KG[goalType])
+    : roundTo5((targetCalories * 0.30) / 4)
+
+  // 残りカロリーをF/Cで分配
+  const remainingCal = targetCalories - proteinG * 4
+  const ratio = FAT_CARB_RATIOS[goalType]
+  const fatG = roundTo5((remainingCal * ratio.fat) / 9)
+  const carbsG = roundTo5((remainingCal * ratio.carb) / 4)
+
   return {
-    protein_g: Math.round((targetCalories * ratio.protein) / 4),
-    fat_g: Math.round((targetCalories * ratio.fat) / 9),
-    carbs_g: Math.round((targetCalories * ratio.carb) / 4),
+    protein_g: proteinG,
+    fat_g: fatG,
+    carbs_g: carbsG,
   }
 }
 
