@@ -31,7 +31,7 @@ export function calcLeanBodyMass(weight: number, bodyFatPct: number): number {
 const PFC_RATIOS: Record<GoalType, { protein: number; fat: number; carb: number }> = {
   'ダイエット': { protein: 0.30, fat: 0.25, carb: 0.45 },
   '筋トレ': { protein: 0.35, fat: 0.25, carb: 0.40 },
-  '維持': { protein: 0.20, fat: 0.25, carb: 0.55 },
+  'ボディメイク': { protein: 0.35, fat: 0.25, carb: 0.40 },
 }
 
 export function calcTargetPFC(targetCalories: number, goalType: GoalType) {
@@ -46,6 +46,7 @@ export function calcTargetPFC(targetCalories: number, goalType: GoalType) {
 export function calcTargetCalories(tdee: number, goalType: GoalType): number {
   if (goalType === 'ダイエット') return tdee - 500
   if (goalType === '筋トレ') return tdee + 300
+  if (goalType === 'ボディメイク') return tdee - 250
   return tdee
 }
 

@@ -1,6 +1,7 @@
 export type Gender = 'male' | 'female'
-export type GoalType = 'ダイエット' | '筋トレ' | '維持'
+export type GoalType = 'ダイエット' | '筋トレ' | 'ボディメイク'
 export type MealType = '朝' | '昼' | '晩' | '間食'
+export type WorkoutType = '筋トレ' | '有酸素'
 
 export interface HlProfile {
   id: string
@@ -59,6 +60,20 @@ export interface DayData {
   record: HlDailyRecord | null
   meals: HlMeal[]
   workouts: HlWorkout[]
+}
+
+export interface HlWorkoutPlan {
+  id: string
+  day_of_week: number
+  menu_name: string
+  workout_type: WorkoutType
+  target_sets: number | null
+  target_reps: number | null
+  target_weight_kg: number | null
+  target_duration_min: number | null
+  target_distance_km: number | null
+  order_index: number
+  created_at: string
 }
 
 export interface JsonInputData {

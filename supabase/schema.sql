@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS hl_profile (
   age integer,
   gender text NOT NULL CHECK (gender IN ('male', 'female')),
   activity_level integer NOT NULL DEFAULT 3 CHECK (activity_level BETWEEN 1 AND 5),
-  goal_type text NOT NULL DEFAULT 'ダイエット' CHECK (goal_type IN ('ダイエット', '筋トレ', '維持')),
+  goal_type text NOT NULL DEFAULT 'ダイエット' CHECK (goal_type IN ('ダイエット', '筋トレ', 'ボディメイク')),
   target_weight_kg numeric(5,1),
   target_months integer,
   created_at timestamptz NOT NULL DEFAULT now(),
@@ -79,3 +79,24 @@ CREATE TRIGGER update_hl_profile_updated_at
 CREATE TRIGGER update_hl_daily_records_updated_at
   BEFORE UPDATE ON hl_daily_records
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- 曜日別トレーニングプラン
+CREATE TABLE IF NOT EXISTS hl_workout_plans (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  day_of_week integer NOT NULL CHECK (day_of_week BETWEEN 0 AND 6), -- 0=日,1=月,...,6=土
+  menu_name text NOT NULL,
+  workout_type text NOT NULL CHECK (workout_type IN ('筋トレ', '有酸素')),
+  target_sets integer,
+  target_reps integer,
+  target_weight_kg numeric(6,1),
+  target_duration_min integer,
+  target_distance_km numeric(5,2),
+  order_index integer NOT NULL DEFAULT 0,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_hl_workout_plans_day ON hl_workout_plans(day_of_week);
+
+-- RLSポリシー
+ALTER TABLE hl_workout_plans ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "allow_all" ON hl_workout_plans FOR ALL USING (true) WITH CHECK (true);

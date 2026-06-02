@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/src/lib/supabase'
-import type { HlProfile, HlDailyRecord, HlMeal, HlWorkout, DayData, JsonInputData } from '@/src/lib/types'
+import type { HlProfile, HlDailyRecord, HlMeal, HlWorkout, HlWorkoutPlan, DayData, JsonInputData, WorkoutType } from '@/src/lib/types'
 
 export function useProfile() {
   const [profile, setProfile] = useState<HlProfile | null>(null)
@@ -87,6 +87,56 @@ export function useTrendData(days: number) {
   }, [days])
 
   return { records, meals, loading }
+}
+
+export function useWorkoutPlans(dayOfWeek: number) {
+  const [plans, setPlans] = useState<HlWorkoutPlan[]>([])
+  const [loading, setLoading] = useState(true)
+
+  const fetchPlans = useCallback(async () => {
+    setLoading(true)
+    const { data } = await supabase
+      .from('hl_workout_plans')
+      .select('*')
+      .eq('day_of_week', dayOfWeek)
+      .order('order_index')
+    setPlans(data ?? [])
+    setLoading(false)
+  }, [dayOfWeek])
+
+  useEffect(() => { fetchPlans() }, [fetchPlans])
+
+  return { plans, loading, refetch: fetchPlans }
+}
+
+export function useAllWorkoutPlans() {
+  const [plans, setPlans] = useState<HlWorkoutPlan[]>([])
+  const [loading, setLoading] = useState(true)
+
+  const fetchPlans = useCallback(async () => {
+    setLoading(true)
+    const { data } = await supabase
+      .from('hl_workout_plans')
+      .select('*')
+      .order('day_of_week')
+      .order('order_index')
+    setPlans(data ?? [])
+    setLoading(false)
+  }, [])
+
+  useEffect(() => { fetchPlans() }, [fetchPlans])
+
+  return { plans, loading, refetch: fetchPlans }
+}
+
+export async function saveWorkoutPlan(plan: Omit<HlWorkoutPlan, 'id' | 'created_at'>): Promise<string | null> {
+  const { error } = await supabase.from('hl_workout_plans').insert(plan)
+  return error ? error.message : null
+}
+
+export async function deleteWorkoutPlan(id: string): Promise<string | null> {
+  const { error } = await supabase.from('hl_workout_plans').delete().eq('id', id)
+  return error ? error.message : null
 }
 
 export async function saveJsonData(input: JsonInputData): Promise<string | null> {
