@@ -72,6 +72,7 @@ export default function DashboardPage() {
         intake={totalCal}
         burned={burnedCal}
         target={targetCal ?? 2000}
+        tdee={tdee ?? undefined}
       />
 
       {(pfc.protein_g > 0 || pfc.fat_g > 0 || pfc.carbs_g > 0) && (
