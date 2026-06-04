@@ -1,8 +1,17 @@
 'use client'
 
 import { useState } from 'react'
-import type { DayData, HlMeal, HlWorkout } from '@/src/lib/types'
-import { calcTotalCalories, calcTotalPFC } from '@/src/lib/calculations'
+import type { DayData, HlMeal, HlWorkout, HlProfile } from '@/src/lib/types'
+import {
+  calcTotalCalories,
+  calcTotalPFC,
+  calcWorkoutCalories,
+  calcTargetCalories,
+  calcBMI,
+  calcBMR,
+  calcTDEE,
+  bmiCategory,
+} from '@/src/lib/calculations'
 import {
   updateDailyRecord,
   deleteMeal,
@@ -10,6 +19,9 @@ import {
   deleteWorkout,
   updateWorkout,
 } from '@/src/hooks/useHealth'
+import SummaryCard from '@/src/components/dashboard/SummaryCard'
+import CalorieMeter from '@/src/components/dashboard/CalorieMeter'
+import PFCBar from '@/src/components/dashboard/PFCBar'
 
 const MEAL_LABELS: Record<string, string> = {
   '朝': '朝食',
@@ -28,6 +40,7 @@ const MOOD_LABELS: Record<number, string> = {
 
 interface Props {
   data: DayData
+  profile: HlProfile | null
   refetch: () => void
 }
 
@@ -102,7 +115,7 @@ function BodySection({
   return (
     <div className="bg-[#1e293b] rounded-xl p-4">
       <div className="flex items-center justify-between mb-3">
-        <h2 className="text-sm font-semibold text-slate-200">身体データ</h2>
+        <h2 className="text-sm font-semibold text-slate-200">身体データ詳細</h2>
         {record && !editing && (
           <button
             onClick={startEdit}
@@ -205,26 +218,12 @@ function BodySection({
         <>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <p className="text-xs text-slate-500">体重</p>
-              <p className="font-bold text-slate-100">{record?.weight_kg ?? '--'} kg</p>
-            </div>
-            <div>
               <p className="text-xs text-slate-500">体脂肪率</p>
               <p className="font-bold text-slate-100">{record?.body_fat_pct ?? '--'} %</p>
             </div>
             <div>
-              <p className="text-xs text-slate-500">睡眠</p>
-              <p className="font-bold text-slate-100">{record?.sleep_hours ?? '--'} 時間</p>
-            </div>
-            <div>
               <p className="text-xs text-slate-500">水分</p>
               <p className="font-bold text-slate-100">{record?.water_ml ?? '--'} ml</p>
-            </div>
-            <div>
-              <p className="text-xs text-slate-500">歩数</p>
-              <p className="font-bold text-slate-100">
-                {record?.steps?.toLocaleString() ?? '--'} 歩
-              </p>
             </div>
             <div>
               <p className="text-xs text-slate-500">気分</p>
@@ -547,15 +546,72 @@ function WorkoutRow({
 }
 
 // ---- メイン ----
-export default function DailyDetail({ data, refetch }: Props) {
+export default function DailyDetail({ data, profile, refetch }: Props) {
   const { record, meals, workouts } = data
   const totalCal = calcTotalCalories(meals)
   const pfc = calcTotalPFC(meals)
+  const burnedCal = Math.round(calcWorkoutCalories(workouts))
+
+  // プロフィールベースの計算
+  let bmi: number | null = null
+  let tdee: number | null = null
+  let targetCal: number | null = null
+
+  const weight = record?.weight_kg ?? profile?.weight_kg ?? null
+
+  if (profile && weight) {
+    bmi = Math.round(calcBMI(weight, profile.height_cm) * 10) / 10
+    const age = profile.age ?? 30
+    const bmr = calcBMR(weight, profile.height_cm, age, profile.gender)
+    tdee = Math.round(calcTDEE(bmr, profile.activity_level))
+    targetCal = Math.round(calcTargetCalories(tdee, profile.goal_type))
+  }
 
   return (
     <div className="p-4 space-y-4">
+      {/* 1. SummaryCards */}
+      <div className="grid grid-cols-2 gap-3">
+        <SummaryCard label="体重" value={weight} unit="kg" />
+        <SummaryCard
+          label="BMI"
+          value={bmi}
+          sub={bmi ? bmiCategory(bmi) : undefined}
+        />
+        <SummaryCard
+          label="睡眠"
+          value={record?.sleep_hours ?? null}
+          unit="時間"
+          color="text-blue-400"
+        />
+        <SummaryCard
+          label="歩数"
+          value={record?.steps?.toLocaleString() ?? null}
+          unit="歩"
+          color="text-purple-400"
+        />
+      </div>
+
+      {/* 2. CalorieMeter */}
+      <CalorieMeter
+        intake={totalCal}
+        burned={burnedCal}
+        target={targetCal ?? 2000}
+        tdee={tdee ?? undefined}
+      />
+
+      {/* 3. PFCBar */}
+      {(pfc.protein_g > 0 || pfc.fat_g > 0 || pfc.carbs_g > 0) && (
+        <PFCBar
+          protein_g={pfc.protein_g}
+          fat_g={pfc.fat_g}
+          carbs_g={pfc.carbs_g}
+        />
+      )}
+
+      {/* 4. 身体データ詳細 + 編集 */}
       <BodySection record={record} refetch={refetch} />
 
+      {/* 5. 食事一覧 */}
       <div className="bg-[#1e293b] rounded-xl p-4">
         <h2 className="text-sm font-semibold text-slate-200 mb-1">食事</h2>
         <p className="text-xs text-slate-500 mb-3">
@@ -573,6 +629,7 @@ export default function DailyDetail({ data, refetch }: Props) {
         )}
       </div>
 
+      {/* 6. トレーニング一覧 */}
       <div className="bg-[#1e293b] rounded-xl p-4">
         <h2 className="text-sm font-semibold text-slate-200 mb-3">トレーニング</h2>
         {workouts.length === 0 ? (

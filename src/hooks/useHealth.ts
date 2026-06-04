@@ -176,6 +176,29 @@ export async function updateWorkout(
   return error ? error.message : null
 }
 
+export function useDatesWithData(): { dates: Set<string>; loading: boolean } {
+  const [dates, setDates] = useState<Set<string>>(new Set())
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetch = async () => {
+      setLoading(true)
+      const from = new Date()
+      from.setDate(from.getDate() - 365)
+      const fromStr = from.toISOString().split('T')[0]
+      const { data } = await supabase
+        .from('hl_daily_records')
+        .select('date')
+        .gte('date', fromStr)
+      setDates(new Set((data ?? []).map((r: { date: string }) => r.date)))
+      setLoading(false)
+    }
+    fetch()
+  }, [])
+
+  return { dates, loading }
+}
+
 export async function saveJsonData(input: JsonInputData): Promise<string | null> {
   const { date, meals, workouts, ...recordFields } = input
 

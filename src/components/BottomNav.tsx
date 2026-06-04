@@ -18,10 +18,17 @@ export default function BottomNav() {
     <nav className="fixed bottom-0 left-0 right-0 bg-[#1e293b] border-t border-slate-700 z-50">
       <div className="max-w-md mx-auto flex">
         {NAV_ITEMS.map((item) => {
-          const isActive =
-            item.href === '/'
-              ? pathname === '/'
-              : pathname.startsWith(item.href.startsWith('/daily') ? '/daily' : item.href)
+          let isActive: boolean
+          if (item.href === '/') {
+            // ホームタブ: / のみ（/daily/... はリダイレクト経由なので日次タブがアクティブになる）
+            isActive = pathname === '/'
+          } else if (item.href.startsWith('/daily/')) {
+            // 日次タブ: /daily/ 配下すべてでアクティブ
+            isActive = pathname.startsWith('/daily/')
+          } else {
+            isActive = pathname.startsWith(item.href)
+          }
+
           return (
             <Link
               key={item.href}
