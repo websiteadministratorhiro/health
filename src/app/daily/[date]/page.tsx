@@ -17,6 +17,7 @@ export default function DailyPage({ params }: Props) {
   const router = useRouter()
 
   const [dragX, setDragX] = useState(0)
+  const [isAnimating, setIsAnimating] = useState(false)
   const touchStartX = useRef<number | null>(null)
   const touchStartY = useRef<number | null>(null)
   const isDragging = useRef(false)
@@ -60,21 +61,23 @@ export default function DailyPage({ params }: Props) {
       return
     }
 
+    setIsAnimating(true)
+
     if (Math.abs(dragX) > 60) {
-      // アニメーション完了後に遷移
+      // スライドアウト → 遷移（dragXをリセットしない）
       const targetX = dragX < 0 ? -window.innerWidth : window.innerWidth
+      const direction = dragX < 0 ? 1 : -1
       setDragX(targetX)
       setTimeout(() => {
+        moveDate(direction)
+        // 遷移後にリセット（新ページでは見えない）
         setDragX(0)
-        if (dragX < 0) {
-          moveDate(1)
-        } else {
-          moveDate(-1)
-        }
-      }, 250)
+        setIsAnimating(false)
+      }, 280)
     } else {
       // スプリングバック
       setDragX(0)
+      setTimeout(() => setIsAnimating(false), 300)
     }
 
     touchStartX.current = null
@@ -87,7 +90,7 @@ export default function DailyPage({ params }: Props) {
       <div
         style={{
           transform: `translateX(${dragX}px)`,
-          transition: dragX === 0 ? 'transform 0.3s ease' : 'none',
+          transition: isAnimating ? 'transform 0.28s ease-out' : 'none',
         }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}

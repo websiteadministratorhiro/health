@@ -4,7 +4,6 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
 const NAV_ITEMS = [
-  { href: '/', label: 'ホーム', icon: '🏠' },
   { href: '/daily/' + new Date().toISOString().split('T')[0], label: '日次', icon: '📅' },
   { href: '/input', label: '入力', icon: '✏️' },
   { href: '/trend', label: 'トレンド', icon: '📈' },
@@ -19,11 +18,7 @@ export default function BottomNav() {
       <div className="max-w-md mx-auto flex">
         {NAV_ITEMS.map((item) => {
           let isActive: boolean
-          if (item.href === '/') {
-            // ホームタブ: / のみ（/daily/... はリダイレクト経由なので日次タブがアクティブになる）
-            isActive = pathname === '/'
-          } else if (item.href.startsWith('/daily/')) {
-            // 日次タブ: /daily/ 配下すべてでアクティブ
+          if (item.href.startsWith('/daily/')) {
             isActive = pathname.startsWith('/daily/')
           } else {
             isActive = pathname.startsWith(item.href)
