@@ -139,6 +139,43 @@ export async function deleteWorkoutPlan(id: string): Promise<string | null> {
   return error ? error.message : null
 }
 
+export async function updateDailyRecord(
+  id: string,
+  fields: Partial<Omit<HlDailyRecord, 'id' | 'date' | 'created_at'>>
+): Promise<string | null> {
+  const { error } = await supabase
+    .from('hl_daily_records')
+    .update({ ...fields, updated_at: new Date().toISOString() })
+    .eq('id', id)
+  return error ? error.message : null
+}
+
+export async function deleteMeal(id: string): Promise<string | null> {
+  const { error } = await supabase.from('hl_meals').delete().eq('id', id)
+  return error ? error.message : null
+}
+
+export async function updateMeal(
+  id: string,
+  fields: Partial<Omit<HlMeal, 'id' | 'date' | 'created_at'>>
+): Promise<string | null> {
+  const { error } = await supabase.from('hl_meals').update(fields).eq('id', id)
+  return error ? error.message : null
+}
+
+export async function deleteWorkout(id: string): Promise<string | null> {
+  const { error } = await supabase.from('hl_workouts').delete().eq('id', id)
+  return error ? error.message : null
+}
+
+export async function updateWorkout(
+  id: string,
+  fields: Partial<Omit<HlWorkout, 'id' | 'date' | 'created_at'>>
+): Promise<string | null> {
+  const { error } = await supabase.from('hl_workouts').update(fields).eq('id', id)
+  return error ? error.message : null
+}
+
 export async function saveJsonData(input: JsonInputData): Promise<string | null> {
   const { date, meals, workouts, ...recordFields } = input
 
