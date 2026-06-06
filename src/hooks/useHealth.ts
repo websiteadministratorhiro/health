@@ -168,6 +168,20 @@ export async function deleteWorkout(id: string): Promise<string | null> {
   return error ? error.message : null
 }
 
+export async function deleteMealsByDate(date: string): Promise<string | null> {
+  const { error } = await supabase.from('hl_meals').delete().eq('date', date)
+  return error ? error.message : null
+}
+
+export async function deleteDayAllData(date: string): Promise<string | null> {
+  const [r1, r2, r3] = await Promise.all([
+    supabase.from('hl_daily_records').delete().eq('date', date),
+    supabase.from('hl_meals').delete().eq('date', date),
+    supabase.from('hl_workouts').delete().eq('date', date),
+  ])
+  return r1.error?.message ?? r2.error?.message ?? r3.error?.message ?? null
+}
+
 export async function updateWorkout(
   id: string,
   fields: Partial<Omit<HlWorkout, 'id' | 'date' | 'created_at'>>
