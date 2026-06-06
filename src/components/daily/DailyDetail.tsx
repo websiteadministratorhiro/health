@@ -76,7 +76,7 @@ function useScrollPreserve() {
 }
 
 // ---- 身体データ個別フィールド編集 ----
-type FieldKey = 'weight_kg' | 'body_fat_pct' | 'sleep_hours' | 'water_ml' | 'steps' | 'mood' | 'condition_notes'
+type FieldKey = 'weight_kg' | 'body_fat_pct' | 'water_ml' | 'mood' | 'condition_notes'
 
 interface FieldConfig {
   key: FieldKey
@@ -91,9 +91,7 @@ interface FieldConfig {
 const FIELD_CONFIGS: FieldConfig[] = [
   { key: 'weight_kg', label: '体重', type: 'number', unit: 'kg', step: '0.1' },
   { key: 'body_fat_pct', label: '体脂肪率', type: 'number', unit: '%', step: '0.1' },
-  { key: 'sleep_hours', label: '睡眠', type: 'number', unit: '時間', step: '0.5' },
   { key: 'water_ml', label: '水分', type: 'number', unit: 'ml' },
-  { key: 'steps', label: '歩数', type: 'number', unit: '歩' },
   { key: 'mood', label: '気分', type: 'mood' },
   { key: 'condition_notes', label: '体調メモ', type: 'text' },
 ]
@@ -118,7 +116,6 @@ function FieldRow({
   const displayValue = () => {
     if (rawValue === null || rawValue === undefined) return '--'
     if (config.key === 'mood') return MOOD_LABELS[rawValue as number] ?? String(rawValue)
-    if (config.key === 'steps') return (rawValue as number).toLocaleString()
     return String(rawValue)
   }
 
@@ -667,6 +664,9 @@ export default function DailyDetail({ data, profile, refetch, date }: Props) {
 
   return (
     <div className="p-4 space-y-4">
+      {/* 0. この日の全データ削除（最上部） */}
+      <DeleteDaySection date={date} refetch={refetch} />
+
       {/* 1. SummaryCards — ⑨ 体重・BMIはrecordに値がある場合のみ表示 */}
       <div className="grid grid-cols-2 gap-3">
         {displayWeight !== null && (
@@ -788,8 +788,6 @@ export default function DailyDetail({ data, profile, refetch, date }: Props) {
         )}
       </div>
 
-      {/* 7. この日の全データ削除 */}
-      <DeleteDaySection date={date} refetch={refetch} />
     </div>
   )
 }

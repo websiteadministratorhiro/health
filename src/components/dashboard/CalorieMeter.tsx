@@ -33,7 +33,7 @@ export default function CalorieMeter({ intake, burned, target, tdee }: Props) {
           <p className="text-xs text-slate-500">kcal</p>
         </div>
         <div>
-          <p className="text-xs text-slate-500">正味摂取</p>
+          <p className="text-xs text-slate-500">差引き</p>
           <p className="text-base font-bold text-slate-100">{net}</p>
           <p className="text-xs text-slate-500">kcal</p>
         </div>
@@ -60,20 +60,18 @@ export default function CalorieMeter({ intake, burned, target, tdee }: Props) {
       {/* 目標・TDEEとの比較 */}
       <div className="space-y-1.5">
         {/* 目標との差 */}
-        <div className="flex justify-between text-xs">
-          <span className="text-slate-400">目標 <span className="text-slate-300">{target} kcal</span> に対して</span>
-          <span className={`font-bold ${vsTarget <= 0 ? 'text-green-400' : 'text-red-400'}`}>
-            {vsTarget > 0 ? `+${vsTarget}` : vsTarget} kcal
-          </span>
-        </div>
+        <p className={`text-xs font-bold ${vsTarget <= 0 ? 'text-green-400' : 'text-red-400'}`}>
+          {vsTarget <= 0
+            ? `目標まで ${Math.abs(vsTarget)} kcal`
+            : `目標 ${vsTarget} kcal オーバー`}
+        </p>
         {/* 太るラインとの差 */}
         {vsTDEE !== null && (
-          <div className="flex justify-between text-xs">
-            <span className="text-slate-400">太るライン <span className="text-yellow-400">{tdee} kcal</span> まで</span>
-            <span className={`font-bold ${vsTDEE < 0 ? 'text-slate-300' : 'text-red-400'}`}>
-              {vsTDEE < 0 ? `あと ${Math.abs(vsTDEE)} kcal` : `${vsTDEE} kcal オーバー ⚠️`}
-            </span>
-          </div>
+          <p className={`text-xs font-bold ${vsTDEE < 0 ? 'text-slate-400' : 'text-red-400'}`}>
+            {vsTDEE < 0
+              ? `太るまで ${Math.abs(vsTDEE)} kcal`
+              : `太るライン ${vsTDEE} kcal オーバー ⚠️`}
+          </p>
         )}
       </div>
     </div>
